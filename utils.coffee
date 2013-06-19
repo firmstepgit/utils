@@ -10,9 +10,7 @@ conf =
 		type: "AES-256-CBC"
 		encoding: "base64"
 
-
 utils = module.exports = exports = {}
-
 
 utils.requireOne = (one) -> (utils.requireAll [one])[0]
 
@@ -120,6 +118,7 @@ utils.filterArray = (haystack, needle, reverse) ->
 						out = false
 			return out
 	)
+	
 # Ensures that a folder exists
 utils.ensureFolderExists = (folderPath, v) ->
 	folders = folderPath.split /\//g
@@ -756,4 +755,3 @@ utils.skeleton = (struct, path) ->
 
 			utils.ensureFolderExists new_path
 			arguments.callee sub, new_path 	
-
