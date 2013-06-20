@@ -119,7 +119,6 @@ utils.filterArray = (haystack, needle, reverse) ->
 			return out
 	)
 	
-# Ensures that a folder exists
 utils.ensureFolderExists = (folderPath, v) ->
 	folders = folderPath.split /\//g
 
@@ -148,6 +147,7 @@ utils.trailingSlash = (path) ->
 	unless path then return ""
 	if path.slice(-1) is "/" then return path
 	else return "#{path}/"
+
 utils.timestamp = ->
 	new Date().getTime()
 
