@@ -144,6 +144,10 @@ utils.ensureFolderExists = (folderPath, v) ->
 				continue
 			console.error "Could not create #{incPath.join '/'}", e
 
+utils.trailingSlash = (path) ->
+	unless path then return ""
+	if path.slice(-1) is "/" then return path
+	else return "#{path}/"
 utils.timestamp = ->
 	new Date().getTime()
 
