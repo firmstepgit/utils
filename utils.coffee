@@ -1,6 +1,7 @@
 
 # You'd do well not to touch these options.
 conf =
+	logToConsole: yes
 	libs: ['q', 'fs', 'child_process', 'dustjs-linkedin', 'dustjs-helpers', 'uglify-js', 'clean-css','less', 'watchr', 'crypto']
 	encoding: 'utf8'
 	port: 8124
@@ -143,6 +144,12 @@ utils.ensureFolderExists = (folderPath, v) ->
 				continue
 			console.error "Could not create #{incPath.join '/'}", e
 
+utils.log = (str, path=conf.log_path, task) ->
+	console.log str.toString conf.encoding if conf.logToConsole and task isnt false
+	
+	fs.appendFileSync path, "#{str}\n", conf.encoding if path
+	if task then task.reject str
+	
 utils.trailingSlash = (path) ->
 	unless path then return ""
 	if path.slice(-1) is "/" then return path
@@ -526,27 +533,23 @@ utils.compileCoffee = (inputFile, v) ->
 	deferred = Q.defer()
 	done = no
 	exitCode = no
+
 	coffee.stderr.on 'data', (data) -> console.log data.toString(); process.exit(1)
+
 	# Buffer the compilation output
 	coffee.stdout.on 'data', (data) -> 
 		output += data.toString()
-		complete exitCode if done and useDarwinMode()
+
+	# When it's finished...
+	coffee.on 'exit', (code) ->
+		complete code	
 
 	complete = (code) ->
-		# ...return!
 		if code is 0
 			deferred.resolve "\n\n/**#{inputFile}**/\n#{output}"
 		else
 			console.log "\tFailed to compile #{inputFile}; exit code:", code
 			deferred.reject code
-
-	# When it's finished...
-	coffee.on 'exit', (code) ->
-		complete code
-		###
-		if utils.isDarwin() then complete code
-		else done = yes; exitCode = code;
-		###
 
 	# Return the promise
 	deferred.promise
