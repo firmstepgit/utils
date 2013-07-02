@@ -92,8 +92,8 @@ utils.extend = ->
 				utils.extend destination[property], source[property]
 			else
 				destination[property] = source[property]
-	for s in arguments
-		addToDestination s, destination
+	
+	addToDestination s, destination for s in arguments
 	destination
 
 utils.uuid = ->
@@ -605,12 +605,13 @@ utils.makeManifest = (params, v) ->
   
 	#Cache section
 	contents += "CACHE:\n"
-	if params.include
-		aFileList = utils.filterArray aFileList, params.include, true
 
 	if params.exclude
 		aFileList = utils.filterArray aFileList, params.exclude 
 	
+	if params.include
+		aFileList.push x for x in params.include
+
 	aFileList.forEach (item) ->
 		contents += item + "\n"
 
