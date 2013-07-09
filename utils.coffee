@@ -2,7 +2,7 @@
 # You'd do well not to touch these options.
 conf =
 	logToConsole: yes
-	libs: ['q', 'fs', 'child_process', 'dustjs-linkedin', 'dustjs-helpers', 'uglify-js', 'clean-css','less', 'watchr', 'crypto']
+	libs: ['q', 'fs', 'child_process', 'coffee-script', 'dustjs-linkedin', 'dustjs-helpers', 'uglify-js', 'clean-css','less', 'watchr', 'crypto']
 	encoding: 'utf8'
 	port: 8124
 	host: '127.0.0.1'
@@ -35,7 +35,7 @@ utils.require = -> utils.requireAll arguments
 require './utils.prototypes'
 
 #Utils based on other libraries needs these moudles
-[Q, fs, cp, dust, dusthelpers, uglify, clean_css, less, watchr, crypto] = utils.requireAll conf.libs
+[Q, fs, cp, coffee, dust, dusthelpers, uglify, clean_css, less, watchr, crypto] = utils.requireAll conf.libs
 
 utils.inArray = (str, arr) ->
 	return arr.indexOf(str) isnt -1
@@ -216,7 +216,6 @@ utils.copyAsset = (from, to, v) ->
 	
 	c.stdout.on 'data', (data) -> console.log "\t", data.toString() if conf.verbose
 	c.stderr.on 'data', (data) -> console.log "\t", data.toString() if conf.verbose
-	
 
 	c.on 'exit', (code) ->	
 		if code is 0
@@ -526,33 +525,12 @@ utils.compileFiles = (inputFiles, fn, v) ->
 # Reads a CoffeeScript file and returns it as a compiled JS string
 utils.compileCoffee = (inputFile, v) ->
 	console.log "\tCompiling #{inputFile}" if conf.verbose or v
-	# Launch the compilation process
-	coffee = cp.spawn 'coffee', ['-cp', inputFile]
-	output = ''
-	# Make a promise
-	deferred = Q.defer()
-	done = no
-	exitCode = no
-
-	coffee.stderr.on 'data', (data) -> console.log data.toString(); process.exit(1)
-
-	# Buffer the compilation output
-	coffee.stdout.on 'data', (data) -> 
-		output += data.toString()
-
-	# When it's finished...
-	coffee.on 'exit', (code) ->
-		complete code	
-
-	complete = (code) ->
-		if code is 0
-			deferred.resolve "\n\n/**#{inputFile}**/\n#{output}"
-		else
-			console.log "\tFailed to compile #{inputFile}; exit code:", code
-			deferred.reject code
-
-	# Return the promise
-	deferred.promise
+	task = Q.defer()
+	fs.readFile inputFile, conf.encoding, (err, data) ->
+		if err then task.reject err
+		output = coffee.compile data
+		task.resolve "\n\n/**#{inputFile}**/\n#{output}"
+	task.promise
 
 # Reads a template file and returns it as a compiled JS string
 utils.compileTemplate = (inputFile, v) ->
