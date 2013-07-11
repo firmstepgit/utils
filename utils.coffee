@@ -524,10 +524,10 @@ utils.compileFiles = (inputFiles, fn, v) ->
 
 # Reads a CoffeeScript file and returns it as a compiled JS string
 utils.compileCoffee = (inputFile, v) ->
-	console.log "\tCompiling #{inputFile}" if conf.verbose or v
 	task = Q.defer()
 	fs.readFile inputFile, conf.encoding, (err, data) ->
 		if err then task.reject err
+		console.log "\tCompiling", inputFile
 		output = coffee.compile data
 		task.resolve "\n\n/**#{inputFile}**/\n#{output}"
 	task.promise
