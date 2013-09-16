@@ -1,0 +1,36 @@
+{
+	"name": "Node-Utils",
+	"description": "Utilities for Node JS",
+	"version": "0.1.0",
+	"author": {
+		"name": "Firmstep",
+		"email": "support@firmstep.com"
+	},
+	"url": "https://www.firmstep.com",
+	"contributors": [{
+		"name": "Devonte Emokpae",
+		"email": "devonteemokpae@firmstep.com"
+	}],
+	"repository": {
+		"type": "git",
+		"url": "git://github.com/firmstepgit/utils"
+	},
+	"dependencies": {
+		"aws-sdk": "1.x.x",
+		"clean-css": "1.x.x",
+		"coffee-script": "1.x.x",
+		"dustjs-helpers": "1.x.x",
+		"dustjs-linkedin": "1.x.x",
+		"githubhook": "0.x.x",
+		"less":"1.x.x",
+		"mime": "1.x.x",
+		"pulverizr": "0.x.x",
+		"q": "0.9.x",
+		"uglify-js": "2.x.x",
+		"watchr": "2.x.x"
+	},
+	"engines": {
+		"node": "0.11.x"
+	},
+	"readmeFilename": "README.md"
+}

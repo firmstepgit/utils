@@ -2,7 +2,7 @@
 # You'd do well not to touch these options.
 conf =
 	logToConsole: yes
-	libs: ['q', 'fs', 'child_process', 'coffee-script', 'dustjs-linkedin', 'dustjs-helpers', 'uglify-js', 'clean-css','less', 'watchr', 'crypto']
+	libs: ['q', 'fs', 'child_process', 'coffee-script', 'dustjs-linkedin', 'dustjs-helpers', 'uglify-js', 'clean-css', 'less', 'watchr', 'crypto']
 	encoding: 'utf8'
 	port: 8124
 	host: '127.0.0.1'
@@ -40,11 +40,20 @@ require './utils.prototypes'
 utils.inArray = (str, arr) ->
 	return arr.indexOf(str) isnt -1
 
-utils.fromBase64 = (str) ->
-	b = (new Buffer(str or "", "base64")).toString conf.encoding or 'utf8'
+utils.convertEncoding = (str, from_encoding, to_encoding) ->
+	b = (new Buffer(str or "", from_encoding or 'utf8')).toString to_encoding or 'utf8'
+	
+utils.fromBase64 = (str, to_encoding=conf.encoding) ->
+	b = (new Buffer(str or "", "base64")).toString to_encoding or 'utf8'
 
-utils.toBase64 = (str) ->
-	b = (new Buffer(str or "", conf.encoding or 'utf8')).toString 'base64'
+utils.toBase64 = (str, from_encoding=conf.encoding) ->
+	b = (new Buffer(str or "", from_encoding or 'utf8')).toString 'base64'
+
+utils.toBinary = (str, from_encoding=conf.encoding) ->
+	b = (new Buffer(str or "", from_encoding or 'utf8')).toString 'binary'
+
+utils.fromBinary = (str, to_encoding=conf.encoding) ->
+	b = (new Buffer(str or "", "binary")).toString to_encoding or 'utf8'
 
 utils.isJSON = (str, isStr=false) ->
 	if not str then return str
