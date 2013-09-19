@@ -2,7 +2,7 @@
 # You'd do well not to touch these options.
 conf =
 	logToConsole: yes
-	libs: ['q', 'fs', 'child_process', 'coffee-script', 'dustjs-linkedin', 'dustjs-helpers', 'uglify-js', 'clean-css', 'less', 'watchr', 'crypto']
+	libs: ['q', 'fs', 'child_process', 'coffee-script', 'dustjs-linkedin', 'dustjs-helpers', 'uglify-js', 'clean-css','less', 'watchr', 'crypto']
 	encoding: 'utf8'
 	port: 8124
 	host: '127.0.0.1'
@@ -40,20 +40,11 @@ require './utils.prototypes'
 utils.inArray = (str, arr) ->
 	return arr.indexOf(str) isnt -1
 
-utils.convertEncoding = (str, from_encoding, to_encoding) ->
-	b = (new Buffer(str or "", from_encoding or 'utf8')).toString to_encoding or 'utf8'
-	
-utils.fromBase64 = (str, to_encoding=conf.encoding) ->
-	b = (new Buffer(str or "", "base64")).toString to_encoding or 'utf8'
+utils.fromBase64 = (str) ->
+	b = (new Buffer(str or "", "base64")).toString conf.encoding or 'utf8'
 
-utils.toBase64 = (str, from_encoding=conf.encoding) ->
-	b = (new Buffer(str or "", from_encoding or 'utf8')).toString 'base64'
-
-utils.toBinary = (str, from_encoding=conf.encoding) ->
-	b = (new Buffer(str or "", from_encoding or 'utf8')).toString 'binary'
-
-utils.fromBinary = (str, to_encoding=conf.encoding) ->
-	b = (new Buffer(str or "", "binary")).toString to_encoding or 'utf8'
+utils.toBase64 = (str) ->
+	b = (new Buffer(str or "", conf.encoding or 'utf8')).toString 'base64'
 
 utils.isJSON = (str, isStr=false) ->
 	if not str then return str
@@ -393,7 +384,7 @@ utils.read_write = (from, to, options) ->
 	start = new Date()
 	read_files()
 
-utils.lessMinify = (inputFiles, out, fromString=false, v) ->
+utils.compileLess = (inputFiles, out, fromString=false, v) ->
 	console.log "LESS Minification Started!" if conf.verbose or v
 	utils.ensureFolderExists out if out?
 	task = Q.defer()
@@ -421,8 +412,16 @@ utils.cssMinify = (inputFiles, out, fromString = false, v) ->
 	minify = (output, out) ->
 		min = clean_css.process output
 		task.resolve min
+
+		if out
+			arr = out.split('/'); ab = arr.pop()
+			om = [arr.join('/'), ab.split('.')[0] + ".dev.css"].join('/')
+			utils.ensureFolderExists om
+			fs.writeFile om, output, conf.encoding, ->
+				console.log "CSS Developer Build Done! - #{om}\n" if conf.verbose or v
 		if out then fs.writeFile out, min, conf.encoding, ->
 			console.log "CSS Minification Done! - #{out}\n" if conf.verbose or v
+
 		task.promise
 
 	return minify inputFiles, out if fromString
@@ -436,17 +435,19 @@ utils.cssMinify = (inputFiles, out, fromString = false, v) ->
 utils.css_less_minify = (cssFiles, lessFiles, out, v) ->
 	task = Q.defer()
 	todo = []
-	todo.push utils.cssMinify cssFiles if cssFiles?.length
-	todo.push utils.lessMinify lessFiles, null, false, v if lessFiles?.length
+	todo.push utils.concatFiles cssFiles if cssFiles?.length
+	todo.push utils.compileLess lessFiles, null, false, v if lessFiles?.length
 
 	Q.all(todo).then(
 		(output) ->
+			todo = []
 			if out and output[1]
 				arr = out.split('/'); arr.pop()
 				om = arr.join('/') + "/main.css"
 				utils.ensureFolderExists om
-				fs.writeFile om, output[1], conf.encoding
-			utils.cssMinify(output.join("\n"), out, true, v).then task.resolve, task.reject
+				todo.push fs.writeFile om, output[1], conf.encoding
+			todo.push utils.cssMinify(output.join("\n"), out, true, v)
+			Q.all(todo).then task.resolve, task.reject
 		(err) -> task.reject err
 	)
 	task.promise
