@@ -391,6 +391,7 @@ utils.compileLess = (inputFiles, out, fromString=false, v) ->
 
 	minify = (output, out) ->
 		less.render output, (e, css) ->
+			console.log 'LESS ERROR', e if e
 			return task.reject e if e
 			task.resolve css
 			if out then fs.writeFile out, css, conf.encoding, ->
